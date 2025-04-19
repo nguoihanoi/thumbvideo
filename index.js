@@ -25,9 +25,9 @@ class ThumbSupply {
                 height: 480
             },
             FULL: {
-                name: '480p',
-                width: 480,
-                height: 480
+                name: 'default',
+                width: 0,
+                height: 0
             }
         });
     }
