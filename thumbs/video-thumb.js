@@ -2,10 +2,6 @@ const ffmpeg = require("fluent-ffmpeg");
 
 const ThumbnailSupplier = require("../thumb.js");
 
-function ratioStringToParts(str) {
-    return str.split(":").map(n => parseInt(n, 10));
-}
-
 class VideoThumbnailSupplier extends ThumbnailSupplier {
 
     constructor(options) {
@@ -15,6 +11,8 @@ class VideoThumbnailSupplier extends ThumbnailSupplier {
 
     createThumbnail(video) {
         return new Promise((resolve, reject) => {
+            const hash = ThumbnailSupplier.hashFile(video);
+
             this.getVideoDimension(video)
                 .then(this.getOptimalThumbnailResolution.bind(this))
                 .then(res => {
@@ -46,46 +44,33 @@ class VideoThumbnailSupplier extends ThumbnailSupplier {
         return new Promise((resolve, reject) => {
             ffmpeg.ffprobe(video, (err, metadata) => {
                 if (err) return reject(err);
-
-                const stream = metadata.streams.find(
-                    stream => stream.codec_type === "video"
-                );
-
-                const darString = stream.display_aspect_ratio;
-
-                // ffprobe returns aspect ratios of "0:1" or `undefined` if they're not specified.
-                // https://trac.ffmpeg.org/ticket/3798
-                if (darString && darString !== "0:1") {
-                    // The DAR is specified so use it directly
-                    const [widthRatioPart, heightRatioPart] = ratioStringToParts(darString);
-                    const inverseDar = heightRatioPart / widthRatioPart;
-                    resolve({
-                        width: stream.width,
-                        height: stream.width * inverseDar
-                    });
-                } else {
-                    // DAR not specified so assume square pixels (use sample resolution as-is).
-                    resolve({
-                        width: stream.width,
-                        height: stream.height
-                    });
-                }
-            });
+                resolve({
+                    width: metadata.streams[0].width,
+                    height: metadata.streams[0].height
+                });
+            })
         });
     }
 
     getOptimalThumbnailResolution(videoDimension) {
-        if(videoDimension.width > videoDimension.height) {
+        if (this.size.width==0 || this.size.height==0) {            
             return {
-                width: this.size.width,
-                height: Math.round(this.size.width * videoDimension.height / videoDimension.width)
+                 width:  videoDimension.width  ,
+                 height: videoDimension.height
+             }
+        } else {            
+            if(videoDimension.width > videoDimension.height) {
+                return {
+                    width: this.size.width,
+                    height: Math.round(this.size.width * videoDimension.height / videoDimension.width)
+                }
+            } else {
+                return {
+                    width: Math.round(this.size.height * videoDimension.width / videoDimension.height),
+                    height: this.size.height
+                }
             }
-        } else {
-            return {
-                width: Math.round(this.size.height * videoDimension.width / videoDimension.height),
-                height: this.size.height
-            }
-        }
+        }  
     }
 }
 
