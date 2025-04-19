@@ -8,7 +8,7 @@ class ThumbSupply {
     get _defaultOptions() {
         return {
             forceCreate: false,
-            size: this.ThumbSize.LARGE
+            size: this.ThumbSize.FULL
         };
     }
 
@@ -19,8 +19,12 @@ class ThumbSupply {
                 width: 240,
                 height: 240
             },
-
             LARGE: {
+                name: '480p',
+                width: 480,
+                height: 480
+            },
+            FULL: {
                 name: '480p',
                 width: 480,
                 height: 480
