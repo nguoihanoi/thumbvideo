@@ -12,11 +12,9 @@ class ThumbnailSupplier {
     }
 
     static hashFile(file) {
-        const uri = fileUrl(file, {resolve: true});
-        const hash = crypto.createHash("sha256");
-        hash.update(uri);
-
-        return hash.digest('hex');
+      let fileArr=file.split("/");
+      let temArr=fileArr[fileArr.length-1];
+        return temArr;
     }
 
     static getThumbnailFileName(file) {
